@@ -1,0 +1,90 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Visitor Pass Generator</title>
+  <link href="style.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(120deg, #f0f4f8, #d9e2ec);
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 60px auto;
+      padding: 40px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .logo {
+      display: block;
+      margin: 0 auto 20px;
+      width: 80px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #2c3e50;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    input {
+      margin-bottom: 15px;
+      padding: 12px;
+      font-size: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      transition: 0.3s;
+    }
+
+    input:focus {
+      border-color: #007bff;
+      outline: none;
+    }
+
+    button {
+      padding: 12px;
+      background-color: #007bff;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="trf.jpg" alt="Company Logo" class="logo" />
+    <h1>Visitor Pass Form</h1>
+    <form id="visitorForm">
+      <input name="name" placeholder="Full Name" required />
+      <input name="email" placeholder="Your Email" type="email" required />
+      <input name="phone" placeholder="Phone Number" required />
+      <input name="visitDate" type="date" required />
+      <input name="host" placeholder="Whom to Visit" required />
+      <input name="hostEmail" placeholder="Host Email" type="email" required />
+      <input name="purpose" placeholder="Purpose of Visit" required />
+      <button type="submit">Generate Pass</button>
+    </form>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
