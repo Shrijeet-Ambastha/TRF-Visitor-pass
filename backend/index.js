@@ -8,6 +8,7 @@ const mongoose = require("mongoose");
 const nodemailer = require("nodemailer");
 
 const app = express();
+app.use(express.static(path.join(__dirname, "public")));
 const PORT = 3000;
 
 mongoose.connect("mongodb+srv://ambasthashrijeet:Shrijeet%40123@cluster0.h5l0rgj.mongodb.net/visitor-pass?retryWrites=true&w=majority&appName=Cluster0")
