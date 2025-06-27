@@ -39,7 +39,8 @@ app.post("/api/request-pass", async (req, res) => {
       passNumber, name, email, phone, visitDate, host, hostEmail, purpose, status: "pending"
     });
 
-    const approvalLink = `http://localhost:3000/api/approve/${visitor._id}`;
+    const approvalLink = `https://trf-visitor-pass.onrender.com/api/approve/${visitor._id}`;
+
 
     const transporter = nodemailer.createTransport({
       service: "gmail",
