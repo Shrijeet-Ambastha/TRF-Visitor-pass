@@ -8,15 +8,14 @@ const mongoose = require("mongoose");
 const nodemailer = require("nodemailer");
 
 const app = express();
-app.use(express.static(path.join(__dirname, "public")));
 const PORT = 3000;
 
-// MongoDB Connection
+// Connect to MongoDB using environment variable
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// Mongoose Schema
+// Visitor Schema
 const visitorSchema = new mongoose.Schema({
   passNumber: String,
   name: String,
@@ -26,7 +25,7 @@ const visitorSchema = new mongoose.Schema({
   host: String,
   hostEmail: String,
   purpose: String,
-  photoData: String, // base64 photo
+  photoData: String, // base64 image
   status: { type: String, default: "pending" },
   issuedAt: { type: Date, default: Date.now }
 });
@@ -35,7 +34,10 @@ const Visitor = mongoose.model("Visitor", visitorSchema);
 
 app.use(bodyParser.json());
 
-// ✅ Handle Visitor Request
+// Serve static frontend files
+app.use(express.static(path.join(__dirname, "..", "frontend")));
+
+// Handle form submission
 app.post("/api/request-pass", async (req, res) => {
   const { name, email, phone, visitDate, host, hostEmail, purpose, photoData } = req.body;
   const passNumber = `TRF-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -69,7 +71,7 @@ app.post("/api/request-pass", async (req, res) => {
   }
 });
 
-// ✅ Host Approval Route
+// Approve and generate PDF
 app.get("/api/approve/:id", async (req, res) => {
   const { id } = req.params;
   try {
@@ -83,7 +85,7 @@ app.get("/api/approve/:id", async (req, res) => {
     const doc = new PDFDocument();
     const chunks = [];
 
-    doc.on("data", (chunk) => chunks.push(chunk));
+    doc.on("data", chunk => chunks.push(chunk));
     doc.on("end", async () => {
       const pdfBuffer = Buffer.concat(chunks);
 
@@ -101,7 +103,6 @@ app.get("/api/approve/:id", async (req, res) => {
         contentType: "application/pdf"
       };
 
-      // Send to visitor
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: visitor.email,
@@ -110,7 +111,6 @@ app.get("/api/approve/:id", async (req, res) => {
         attachments: [attachment]
       });
 
-      // Send to host
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: visitor.hostEmail,
@@ -122,19 +122,21 @@ app.get("/api/approve/:id", async (req, res) => {
       res.send("✅ Approved. PDF sent to visitor and host.");
     });
 
-    // ✅ Add Logo
+    // Add logo (if exists)
     const logoPath = path.join(__dirname, "trf.PNG");
     if (fs.existsSync(logoPath)) {
       doc.image(logoPath, { fit: [130, 130], align: "center" });
       doc.moveDown(0.5);
     }
 
+    // Add header
     doc.fontSize(20).fillColor("#004080").text("TRF Ltd", { align: "center" });
     doc.moveDown(0.5);
-    doc.fontSize(26).text("Visitor E-Pass", { align: "center" });
+    doc.fontSize(26).fillColor("black").text("Visitor E-Pass", { align: "center" });
     doc.moveDown(1);
 
-    doc.fontSize(16).fillColor("black");
+    // Add visitor details
+    doc.fontSize(16);
     doc.text(`Pass No: ${visitor.passNumber}`);
     doc.text(`Name: ${visitor.name}`);
     doc.text(`Email: ${visitor.email}`);
@@ -144,10 +146,10 @@ app.get("/api/approve/:id", async (req, res) => {
     doc.text(`Purpose: ${visitor.purpose}`);
     doc.moveDown(1);
 
-    // ✅ Embed the captured image
-    if (visitor.photoData && visitor.photoData.startsWith("data:image")) {
-      const base64Data = visitor.photoData.replace(/^data:image\/png;base64,/, "");
-      const buffer = Buffer.from(base64Data, "base64");
+    // Add live photo if available
+    if (visitor.photoData?.startsWith("data:image")) {
+      const base64 = visitor.photoData.replace(/^data:image\/png;base64,/, "");
+      const buffer = Buffer.from(base64, "base64");
       doc.image(buffer, { width: 180, align: "center" });
     }
 
@@ -159,7 +161,11 @@ app.get("/api/approve/:id", async (req, res) => {
   }
 });
 
-// Start Server
+// Serve frontend index.html at root URL
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "frontend", "index.html"));
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
