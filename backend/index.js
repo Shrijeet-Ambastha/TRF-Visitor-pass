@@ -117,6 +117,23 @@ app.get("/api/approve/:id", async (req, res) => {
     if (fs.existsSync(logoPath)) {
       doc.image(logoPath, { fit: [130, 130], align: "center" });
     }
+    const logoPath = path.join(__dirname, "trf.png");
+
+if (fs.existsSync(logoPath)) {
+  try {
+    doc.image(logoPath, {
+      fit: [120, 120],       // ✅ Increase or decrease size as needed
+      align: "center",
+      valign: "top"
+    });
+    doc.moveDown(1);
+  } catch (err) {
+    console.error("❌ Failed to insert logo into PDF:", err.message);
+  }
+} else {
+  console.error("❌ Logo not found at path:", logoPath);
+}
+
 
     doc.fontSize(26).text("Visitor E-Pass", { align: "center" });
 doc.moveDown(1);
