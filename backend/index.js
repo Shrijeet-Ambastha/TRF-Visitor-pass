@@ -117,8 +117,6 @@ app.get("/api/approve/:id", async (req, res) => {
     if (fs.existsSync(logoPath)) {
       doc.image(logoPath, { fit: [130, 130], align: "center" });
     }
-    const logoPath = path.join(__dirname, "trf.png");
-
 if (fs.existsSync(logoPath)) {
   try {
     doc.image(logoPath, {
