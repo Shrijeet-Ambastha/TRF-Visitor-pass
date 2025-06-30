@@ -115,7 +115,7 @@ app.get("/api/approve/:id", async (req, res) => {
 
     const logoPath = path.join(__dirname, "trf.PNG");
     if (fs.existsSync(logoPath)) {
-      doc.image(logoPath, { fit: [100, 100], align: "center" });
+      doc.image(logoPath, { fit: [130, 130], align: "center" });
     }
 
     doc.fontSize(20).text("Visitor E-Pass", { align: "center" });
