@@ -78,8 +78,10 @@ app.get("/api/approve/:id", async (req, res) => {
     const chunks = [];
 
     doc.on("data", (chunk) => chunks.push(chunk));
+
     doc.on("end", async () => {
       const pdfBuffer = Buffer.concat(chunks);
+
       const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
@@ -112,52 +114,54 @@ app.get("/api/approve/:id", async (req, res) => {
 
       res.send("✅ Approved. PDF sent to visitor and host.");
     });
-const logoPath = path.join(__dirname, "trf.PNG");
 
-if (fs.existsSync(logoPath)) {
-  try {
-    doc.image(logoPath, {
-      fit: [130, 130],
-      align: "center",
-      valign: "top"
+    // 🖼 Add logo
+    const logoPath = path.join(__dirname, "trf.PNG");
+    if (fs.existsSync(logoPath)) {
+      try {
+        doc.image(logoPath, {
+          fit: [130, 130],
+          align: "center",
+          valign: "top"
+        });
+        doc.moveDown(1);
+      } catch (err) {
+        console.error("❌ Failed to insert logo into PDF:", err.message);
+      }
+    } else {
+      console.error("❌ Logo not found at path:", logoPath);
+    }
+
+    // 🆕 Add TRF Ltd text
+    doc.fontSize(22).fillColor("#004080").text("TRF Ltd", {
+      align: "center"
     });
+
     doc.moveDown(1);
-  } catch (err) {
-    console.error("❌ Failed to insert logo into PDF:", err.message);
-  }
-} else {
-  console.error("❌ Logo not found at path:", logoPath);
-}
+    doc.fontSize(26).fillColor("black").text("Visitor E-Pass", { align: "center" });
+    doc.moveDown(1);
 
-doc.fontSize(20).fillColor("#004080").text("TRF Ltd", {
-  align: "center"
-});
-doc.moveDown(1); 
+    doc.fontSize(16).text(`Pass No: ${visitor.passNumber}`);
+    doc.moveDown(0.5);
+    doc.text(`Name: ${visitor.name}`);
+    doc.moveDown(0.5);
+    doc.text(`Email: ${visitor.email}`);
+    doc.moveDown(0.5);
+    doc.text(`Phone: ${visitor.phone}`);
+    doc.moveDown(0.5);
+    doc.text(`Visit Date: ${visitor.visitDate}`);
+    doc.moveDown(0.5);
+    doc.text(`Host: ${visitor.host}`);
+    doc.moveDown(0.5);
+    doc.text(`Purpose: ${visitor.purpose}`);
 
-    doc.fontSize(26).text("Visitor E-Pass", { align: "center" });
-doc.moveDown(1);
-
-doc.fontSize(16).text(`Pass No: ${visitor.passNumber}`);
-doc.moveDown(0.5);
-doc.text(`Name: ${visitor.name}`);
-doc.moveDown(0.5);
-doc.text(`Email: ${visitor.email}`);
-doc.moveDown(0.5);
-doc.text(`Phone: ${visitor.phone}`);
-doc.moveDown(0.5);
-doc.text(`Visit Date: ${visitor.visitDate}`);
-doc.moveDown(0.5);
-doc.text(`Host: ${visitor.host}`);
-doc.moveDown(0.5);
-doc.text(`Purpose: ${visitor.purpose}`);
-
-    doc.end();
-
+    doc.end(); // important! end must be called last
   } catch (err) {
     console.error("❌ Error approving:", err);
     res.status(500).send("Error processing approval");
   }
 });
+
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
