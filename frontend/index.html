@@ -77,6 +77,10 @@
 </h2>
   <h1>Visitor Pass Form</h1>
   <form id="visitorForm">
+    <video id="camera" autoplay width="300" style="margin: 10px auto; display: block;"></video>
+<canvas id="snapshot" width="300" height="225" style="display: none;"></canvas>
+<input type="hidden" id="photoData" name="photoData" />
+
     <input name="name" placeholder="Full Name" required />
     <input name="email" placeholder="Your Email" type="email" required />
     <input name="phone" placeholder="Phone Number" required />

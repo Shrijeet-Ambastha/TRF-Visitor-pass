@@ -11,9 +11,12 @@ const app = express();
 app.use(express.static(path.join(__dirname, "public")));
 const PORT = 3000;
 
-mongoose.connect("mongodb+srv://ambasthashrijeet:Shrijeet%40123@cluster0.h5l0rgj.mongodb.net/visitor-pass?retryWrites=true&w=majority&appName=Cluster0")
+// MongoDB Connection
+mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
+
+// Mongoose Schema
 const visitorSchema = new mongoose.Schema({
   passNumber: String,
   name: String,
@@ -23,25 +26,26 @@ const visitorSchema = new mongoose.Schema({
   host: String,
   hostEmail: String,
   purpose: String,
+  photoData: String, // base64 photo
   status: { type: String, default: "pending" },
   issuedAt: { type: Date, default: Date.now }
 });
 
 const Visitor = mongoose.model("Visitor", visitorSchema);
 
-app.use(express.static(path.join(__dirname, "..", "frontend")));
 app.use(bodyParser.json());
+
+// ✅ Handle Visitor Request
 app.post("/api/request-pass", async (req, res) => {
-  const { name, email, phone, visitDate, host, hostEmail, purpose } = req.body;
+  const { name, email, phone, visitDate, host, hostEmail, purpose, photoData } = req.body;
   const passNumber = `TRF-${Math.floor(100000 + Math.random() * 900000)}`;
 
   try {
     const visitor = await Visitor.create({
-      passNumber, name, email, phone, visitDate, host, hostEmail, purpose, status: "pending"
+      passNumber, name, email, phone, visitDate, host, hostEmail, purpose, photoData
     });
 
     const approvalLink = `https://trf-visitor-pass.onrender.com/api/approve/${visitor._id}`;
-
 
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -58,12 +62,14 @@ app.post("/api/request-pass", async (req, res) => {
       text: `Hello ${host},\n\n${name} has requested a visit on ${visitDate}.\n\nPurpose: ${purpose}\n\nClick below to approve:\n${approvalLink}`
     });
 
-    res.status(200).json({ message: "Request submitted. Awaiting host approval." });
+    res.status(200).json({ message: "✅ Request submitted. Awaiting host approval." });
   } catch (err) {
     console.error("❌ Failed to process request:", err);
     res.status(500).send("Error processing visitor request");
   }
 });
+
+// ✅ Host Approval Route
 app.get("/api/approve/:id", async (req, res) => {
   const { id } = req.params;
   try {
@@ -78,7 +84,6 @@ app.get("/api/approve/:id", async (req, res) => {
     const chunks = [];
 
     doc.on("data", (chunk) => chunks.push(chunk));
-
     doc.on("end", async () => {
       const pdfBuffer = Buffer.concat(chunks);
 
@@ -96,6 +101,7 @@ app.get("/api/approve/:id", async (req, res) => {
         contentType: "application/pdf"
       };
 
+      // Send to visitor
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: visitor.email,
@@ -104,6 +110,7 @@ app.get("/api/approve/:id", async (req, res) => {
         attachments: [attachment]
       });
 
+      // Send to host
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: visitor.hostEmail,
@@ -115,53 +122,44 @@ app.get("/api/approve/:id", async (req, res) => {
       res.send("✅ Approved. PDF sent to visitor and host.");
     });
 
-    // 🖼 Add logo
+    // ✅ Add Logo
     const logoPath = path.join(__dirname, "trf.PNG");
     if (fs.existsSync(logoPath)) {
-      try {
-        doc.image(logoPath, {
-          fit: [130, 130],
-          align: "center",
-          valign: "top"
-        });
-        doc.moveDown(1);
-      } catch (err) {
-        console.error("❌ Failed to insert logo into PDF:", err.message);
-      }
-    } else {
-      console.error("❌ Logo not found at path:", logoPath);
+      doc.image(logoPath, { fit: [130, 130], align: "center" });
+      doc.moveDown(0.5);
     }
 
-    // 🆕 Add TRF Ltd text
-    doc.fontSize(22).fillColor("#004080").text("TRF Ltd", {
-      align: "center"
-    });
-
-    doc.moveDown(1);
-    doc.fontSize(26).fillColor("black").text("Visitor E-Pass", { align: "center" });
-    doc.moveDown(1);
-
-    doc.fontSize(16).text(`Pass No: ${visitor.passNumber}`);
+    doc.fontSize(20).fillColor("#004080").text("TRF Ltd", { align: "center" });
     doc.moveDown(0.5);
+    doc.fontSize(26).text("Visitor E-Pass", { align: "center" });
+    doc.moveDown(1);
+
+    doc.fontSize(16).fillColor("black");
+    doc.text(`Pass No: ${visitor.passNumber}`);
     doc.text(`Name: ${visitor.name}`);
-    doc.moveDown(0.5);
     doc.text(`Email: ${visitor.email}`);
-    doc.moveDown(0.5);
     doc.text(`Phone: ${visitor.phone}`);
-    doc.moveDown(0.5);
     doc.text(`Visit Date: ${visitor.visitDate}`);
-    doc.moveDown(0.5);
     doc.text(`Host: ${visitor.host}`);
-    doc.moveDown(0.5);
     doc.text(`Purpose: ${visitor.purpose}`);
+    doc.moveDown(1);
 
-    doc.end(); // important! end must be called last
+    // ✅ Embed the captured image
+    if (visitor.photoData && visitor.photoData.startsWith("data:image")) {
+      const base64Data = visitor.photoData.replace(/^data:image\/png;base64,/, "");
+      const buffer = Buffer.from(base64Data, "base64");
+      doc.image(buffer, { width: 180, align: "center" });
+    }
+
+    doc.end();
+
   } catch (err) {
-    console.error("❌ Error approving:", err);
-    res.status(500).send("Error processing approval");
+    console.error("❌ Error approving visitor:", err);
+    res.status(500).send("Error during approval");
   }
 });
 
+// Start Server
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
