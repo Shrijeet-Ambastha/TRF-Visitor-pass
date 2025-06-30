@@ -118,15 +118,23 @@ app.get("/api/approve/:id", async (req, res) => {
       doc.image(logoPath, { fit: [130, 130], align: "center" });
     }
 
-    doc.fontSize(20).text("Visitor E-Pass", { align: "center" });
-    doc.moveDown();
-    doc.fontSize(12).text(`Pass No: ${visitor.passNumber}`);
-    doc.text(`Name: ${visitor.name}`);
-    doc.text(`Email: ${visitor.email}`);
-    doc.text(`Phone: ${visitor.phone}`);
-    doc.text(`Visit Date: ${visitor.visitDate}`);
-    doc.text(`Host: ${visitor.host}`);
-    doc.text(`Purpose: ${visitor.purpose}`);
+    doc.fontSize(26).text("Visitor E-Pass", { align: "center" });
+doc.moveDown(1);
+
+doc.fontSize(16).text(`Pass No: ${visitor.passNumber}`);
+doc.moveDown(0.5);
+doc.text(`Name: ${visitor.name}`);
+doc.moveDown(0.5);
+doc.text(`Email: ${visitor.email}`);
+doc.moveDown(0.5);
+doc.text(`Phone: ${visitor.phone}`);
+doc.moveDown(0.5);
+doc.text(`Visit Date: ${visitor.visitDate}`);
+doc.moveDown(0.5);
+doc.text(`Host: ${visitor.host}`);
+doc.moveDown(0.5);
+doc.text(`Purpose: ${visitor.purpose}`);
+
     doc.end();
 
   } catch (err) {
