@@ -129,7 +129,10 @@ if (fs.existsSync(logoPath)) {
   console.error("❌ Logo not found at path:", logoPath);
 }
 
-
+doc.fontSize(20).fillColor("#004080").text("TRF Ltd", {
+  align: "center"
+});
+doc.moveDown(1); 
 
     doc.fontSize(26).text("Visitor E-Pass", { align: "center" });
 doc.moveDown(1);
