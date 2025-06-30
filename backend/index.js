@@ -112,15 +112,12 @@ app.get("/api/approve/:id", async (req, res) => {
 
       res.send("✅ Approved. PDF sent to visitor and host.");
     });
+const logoPath = path.join(__dirname, "trf.PNG");
 
-    const logoPath = path.join(__dirname, "trf.PNG");
-    if (fs.existsSync(logoPath)) {
-      doc.image(logoPath, { fit: [130, 130], align: "center" });
-    }
 if (fs.existsSync(logoPath)) {
   try {
     doc.image(logoPath, {
-      fit: [120, 120],       // ✅ Increase or decrease size as needed
+      fit: [130, 130],
       align: "center",
       valign: "top"
     });
@@ -131,6 +128,7 @@ if (fs.existsSync(logoPath)) {
 } else {
   console.error("❌ Logo not found at path:", logoPath);
 }
+
 
 
     doc.fontSize(26).text("Visitor E-Pass", { align: "center" });
