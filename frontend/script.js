@@ -2,6 +2,7 @@
 const video = document.getElementById("camera");
 const canvas = document.getElementById("snapshot");
 const photoDataInput = document.getElementById("photoData");
+const printBtn = document.getElementById("printBtn");
 
 // 1. Start the webcam
 navigator.mediaDevices.getUserMedia({ video: true })
@@ -47,6 +48,14 @@ document.getElementById("visitorForm").addEventListener("submit", async (e) => {
     if (res.ok) {
       alert("✅ Request submitted! Awaiting host approval.");
       form.reset();
+
+      // ✅ Show the print button
+      printBtn.style.display = "inline-block";
+
+      // ✅ Add print behavior
+      printBtn.onclick = () => {
+        window.print(); // triggers the browser's print dialog
+      };
     } else {
       alert("❌ Failed to submit request.");
     }
