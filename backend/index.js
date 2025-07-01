@@ -73,6 +73,16 @@ app.post("/api/request-pass", async (req, res) => {
   }
 });
 
+app.get("/api/visitors", async (req, res) => {
+  try {
+    const visitors = await Visitor.find().sort({ issuedAt: -1 });
+    res.json(visitors);
+  } catch (err) {
+    console.error("❌ Error fetching visitors:", err);
+    res.status(500).send("Failed to retrieve visitors");
+  }
+});
+
 // Approve and generate PDF
 app.get("/api/approve/:id", async (req, res) => {
   const { id } = req.params;
@@ -123,6 +133,19 @@ app.get("/api/approve/:id", async (req, res) => {
 
       res.send("✅ Approved. PDF sent to visitor and host.");
     });
+
+
+app.get("/api/visitors", async (req, res) => {
+  try {
+    const visitors = await Visitor.find().sort({ issuedAt: -1 });
+    res.json(visitors);
+  } catch (err) {
+    console.error("❌ Error fetching visitors:", err);
+    res.status(500).send("Failed to retrieve visitors");
+  }
+});
+
+
 
     // Add logo (if exists)
     const logoPath = path.join(__dirname, "trf.PNG");
