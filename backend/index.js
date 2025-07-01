@@ -32,7 +32,9 @@ const visitorSchema = new mongoose.Schema({
 
 const Visitor = mongoose.model("Visitor", visitorSchema);
 
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '5mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '5mb' }));
+
 
 // Serve static frontend files
 app.use(express.static(path.join(__dirname, "..", "frontend")));
