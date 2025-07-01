@@ -10,7 +10,7 @@ const nodemailer = require("nodemailer");
 const app = express();
 const PORT = 3000;
 
-// Connect to MongoDB using environment variable
+// Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
@@ -25,7 +25,7 @@ const visitorSchema = new mongoose.Schema({
   host: String,
   hostEmail: String,
   purpose: String,
-  photoData: String, // base64 image
+  photoData: String,
   status: { type: String, default: "pending" },
   issuedAt: { type: Date, default: Date.now }
 });
@@ -34,12 +34,9 @@ const Visitor = mongoose.model("Visitor", visitorSchema);
 
 app.use(bodyParser.json({ limit: '5mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '5mb' }));
-
-
-// Serve static frontend files
 app.use(express.static(path.join(__dirname, "..", "frontend")));
 
-// Handle form submission
+// 🚀 Visitor Request API
 app.post("/api/request-pass", async (req, res) => {
   const { name, email, phone, visitDate, host, hostEmail, purpose, photoData } = req.body;
   const passNumber = `TRF-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -73,17 +70,7 @@ app.post("/api/request-pass", async (req, res) => {
   }
 });
 
-app.get("/api/visitors", async (req, res) => {
-  try {
-    const visitors = await Visitor.find().sort({ issuedAt: -1 });
-    res.json(visitors);
-  } catch (err) {
-    console.error("❌ Error fetching visitors:", err);
-    res.status(500).send("Failed to retrieve visitors");
-  }
-});
-
-// Approve and generate PDF
+// ✅ Approve API
 app.get("/api/approve/:id", async (req, res) => {
   const { id } = req.params;
   try {
@@ -134,33 +121,20 @@ app.get("/api/approve/:id", async (req, res) => {
       res.send("✅ Approved. PDF sent to visitor and host.");
     });
 
-
-app.get("/api/visitors", async (req, res) => {
-  try {
-    const visitors = await Visitor.find().sort({ issuedAt: -1 });
-    res.json(visitors);
-  } catch (err) {
-    console.error("❌ Error fetching visitors:", err);
-    res.status(500).send("Failed to retrieve visitors");
-  }
-});
-
-
-
-    // Add logo (if exists)
+    // 📌 Logo
     const logoPath = path.join(__dirname, "trf.PNG");
     if (fs.existsSync(logoPath)) {
       doc.image(logoPath, { fit: [130, 130], align: "center" });
       doc.moveDown(0.5);
     }
 
-    // Add header
+    // Header
     doc.fontSize(20).fillColor("#004080").text("TRF Ltd", { align: "center" });
     doc.moveDown(0.5);
     doc.fontSize(26).fillColor("black").text("Visitor E-Pass", { align: "center" });
     doc.moveDown(1);
 
-    // Add visitor details
+    // Details
     doc.fontSize(16);
     doc.text(`Pass No: ${visitor.passNumber}`);
     doc.text(`Name: ${visitor.name}`);
@@ -171,7 +145,7 @@ app.get("/api/visitors", async (req, res) => {
     doc.text(`Purpose: ${visitor.purpose}`);
     doc.moveDown(1);
 
-    // Add live photo if available
+    // Live Photo
     if (visitor.photoData?.startsWith("data:image")) {
       const base64 = visitor.photoData.replace(/^data:image\/png;base64,/, "");
       const buffer = Buffer.from(base64, "base64");
@@ -179,14 +153,37 @@ app.get("/api/visitors", async (req, res) => {
     }
 
     doc.end();
-
   } catch (err) {
     console.error("❌ Error approving visitor:", err);
     res.status(500).send("Error during approval");
   }
 });
 
-// Serve frontend index.html at root URL
+// ✅ Visitor History
+app.get("/api/visitors", async (req, res) => {
+  try {
+    const visitors = await Visitor.find().sort({ issuedAt: -1 });
+    res.json(visitors);
+  } catch (err) {
+    console.error("❌ Error fetching visitors:", err);
+    res.status(500).send("Failed to retrieve visitors");
+  }
+});
+
+// ✅ Cleanup Visitors Older Than 45 Days
+app.delete("/api/cleanup-old-visitors", async (req, res) => {
+  const days = 45;
+  const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  try {
+    const result = await Visitor.deleteMany({ issuedAt: { $lt: cutoffDate } });
+    res.send(`🧹 Deleted ${result.deletedCount} visitor(s) older than ${days} days.`);
+  } catch (err) {
+    console.error("❌ Cleanup error:", err);
+    res.status(500).send("Failed to clean up old visitor records.");
+  }
+});
+
+// ✅ Serve index.html for frontend
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "frontend", "index.html"));
 });
