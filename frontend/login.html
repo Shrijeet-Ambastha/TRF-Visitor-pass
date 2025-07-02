@@ -20,12 +20,19 @@
       cursor: pointer;
       background-color: #007bff;
       color: white;
+      text-decoration: none; /* Remove underline */
+      display: inline-block;
+    }
+    .btn:hover {
+      background-color: #0056b3;
     }
   </style>
 </head>
 <body>
   <h1>Welcome to TRF Visitor Management</h1>
-  <button class="btn" onclick="location.href='index.html'">Visitor Sign In</button>
-  <button class="btn" onclick="location.href='guard.html'">Security Guard Login</button>
+
+  <a href="/index.html" class="btn">Visitor</a>
+  <a href="/guard.html" class="btn">Security Guard</a>
+
 </body>
 </html>
