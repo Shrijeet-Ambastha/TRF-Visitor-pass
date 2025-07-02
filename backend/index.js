@@ -10,12 +10,12 @@ const nodemailer = require("nodemailer");
 const app = express();
 const PORT = 3000;
 
-// Connect to MongoDB
+// ✅ MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// Visitor Schema
+// ✅ Schema
 const visitorSchema = new mongoose.Schema({
   passNumber: String,
   name: String,
@@ -36,7 +36,7 @@ app.use(bodyParser.json({ limit: '5mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '5mb' }));
 app.use(express.static(path.join(__dirname, "..", "frontend")));
 
-// 🚀 Visitor Request API
+// ✅ Request Pass
 app.post("/api/request-pass", async (req, res) => {
   const { name, email, phone, visitDate, host, hostEmail, purpose, photoData } = req.body;
   const passNumber = `TRF-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -77,7 +77,7 @@ app.post("/api/request-pass", async (req, res) => {
   }
 });
 
-// ✅ Approve API
+// ✅ Approve Visitor
 app.get("/api/approve/:id", async (req, res) => {
   const { id } = req.params;
   try {
@@ -109,6 +109,7 @@ app.get("/api/approve/:id", async (req, res) => {
         contentType: "application/pdf"
       };
 
+      // Send to visitor
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: visitor.email,
@@ -117,6 +118,7 @@ app.get("/api/approve/:id", async (req, res) => {
         attachments: [attachment]
       });
 
+      // Send to host
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: visitor.hostEmail,
@@ -128,17 +130,13 @@ app.get("/api/approve/:id", async (req, res) => {
       res.send("✅ Approved. PDF sent to visitor and host.");
     });
 
-    // Add background image
-    const backgroundPath = path.join(__dirname, "background.png");
-    if (fs.existsSync(backgroundPath)) {
-      try {
-        doc.image(backgroundPath, 0, 0, {
-          width: doc.page.width,
-          height: doc.page.height
-        });
-      } catch (err) {
-        console.error("❌ Failed to add background image:", err.message);
-      }
+    // Background
+    const bgPath = path.join(__dirname, "background.png");
+    if (fs.existsSync(bgPath)) {
+      doc.image(bgPath, 0, 0, {
+        width: doc.page.width,
+        height: doc.page.height
+      });
     }
 
     // Logo
@@ -148,12 +146,12 @@ app.get("/api/approve/:id", async (req, res) => {
       doc.moveDown(0.5);
     }
 
-    // Header and Details
+    // Info
     doc.fontSize(20).fillColor("#004080").text("TRF Ltd", { align: "center" });
     doc.moveDown(0.5);
-    doc.fontSize(26).fillColor("black").text("Visitor E-Pass", { align: "center" });
+    doc.fontSize(26).text("Visitor E-Pass", { align: "center" });
     doc.moveDown(1);
-    doc.fontSize(16);
+    doc.fontSize(16).fillColor("black");
     doc.text(`Pass No: ${visitor.passNumber}`);
     doc.text(`Name: ${visitor.name}`);
     doc.text(`Email: ${visitor.email}`);
@@ -165,26 +163,26 @@ app.get("/api/approve/:id", async (req, res) => {
 
     // Photo
     if (visitor.photoData?.startsWith("data:image")) {
-      const base64 = visitor.photoData.replace(/^data:image\/png;base64,/, "");
-      const buffer = Buffer.from(base64, "base64");
+      const buffer = Buffer.from(visitor.photoData.split(",")[1], "base64");
       doc.image(buffer, { width: 180, align: "center" });
     }
 
     doc.end();
+
   } catch (err) {
     console.error("❌ Error approving visitor:", err);
     res.status(500).send("Error during approval");
   }
 });
 
-// ❌ Reject API
+// ❌ Reject Visitor
 app.get("/api/reject/:id", async (req, res) => {
   const { id } = req.params;
   try {
     const visitor = await Visitor.findById(id);
-    if (!visitor) return res.status(404).send("Visitor request not found");
-    if (visitor.status === "rejected") return res.send("Already rejected");
+    if (!visitor) return res.status(404).send("Visitor not found");
     if (visitor.status === "approved") return res.send("Already approved");
+    if (visitor.status === "rejected") return res.send("Already rejected");
 
     visitor.status = "rejected";
     await visitor.save();
@@ -206,38 +204,78 @@ app.get("/api/reject/:id", async (req, res) => {
 
     res.send("❌ Rejected. Notification sent to visitor.");
   } catch (err) {
-    console.error("❌ Error rejecting visitor:", err);
-    res.status(500).send("Error during rejection");
+    console.error("❌ Rejection error:", err);
+    res.status(500).send("Error rejecting visitor");
   }
 });
 
-// ✅ Visitor History
+// ✅ Download Pass (Security Guard)
+app.get("/api/download-pass/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const visitor = await Visitor.findById(id);
+    if (!visitor || visitor.status !== "approved") {
+      return res.status(404).send("Pass not found or not approved");
+    }
+
+    const doc = new PDFDocument();
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename=${visitor.passNumber}.pdf`);
+    doc.pipe(res);
+
+    const logoPath = path.join(__dirname, "trf.png");
+    if (fs.existsSync(logoPath)) doc.image(logoPath, { fit: [100, 100] });
+
+    doc.fontSize(18).text("TRF Ltd", { align: "center" });
+    doc.moveDown();
+    doc.fontSize(22).text("Visitor Pass", { align: "center" });
+    doc.moveDown();
+    doc.fontSize(14);
+    doc.text(`Pass No: ${visitor.passNumber}`);
+    doc.text(`Name: ${visitor.name}`);
+    doc.text(`Visit Date: ${visitor.visitDate}`);
+    doc.text(`Purpose: ${visitor.purpose}`);
+    doc.text(`Host: ${visitor.host}`);
+
+    if (visitor.photoData?.startsWith("data:image")) {
+      const buffer = Buffer.from(visitor.photoData.split(",")[1], "base64");
+      doc.image(buffer, { width: 120 });
+    }
+
+    doc.end();
+  } catch (err) {
+    console.error("❌ Error generating download PDF:", err);
+    res.status(500).send("Failed to generate PDF");
+  }
+});
+
+// ✅ View Visitors
 app.get("/api/visitors", async (req, res) => {
   try {
     const visitors = await Visitor.find().sort({ issuedAt: -1 });
     res.json(visitors);
   } catch (err) {
-    console.error("❌ Error fetching visitors:", err);
+    console.error("❌ Fetch error:", err);
     res.status(500).send("Failed to retrieve visitors");
   }
 });
 
-// ✅ Cleanup Visitors Older Than 45 Days
+// ✅ Cleanup Visitors > 45 Days
 app.delete("/api/cleanup-old-visitors", async (req, res) => {
   const days = 45;
-  const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
   try {
-    const result = await Visitor.deleteMany({ issuedAt: { $lt: cutoffDate } });
+    const result = await Visitor.deleteMany({ issuedAt: { $lt: cutoff } });
     res.send(`🧹 Deleted ${result.deletedCount} visitor(s) older than ${days} days.`);
   } catch (err) {
     console.error("❌ Cleanup error:", err);
-    res.status(500).send("Failed to clean up old visitor records.");
+    res.status(500).send("Cleanup failed");
   }
 });
 
-// ✅ Serve index.html for frontend
+// ✅ Default Route (Login Page)
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "frontend", "index.html"));
+  res.sendFile(path.join(__dirname, "..", "frontend", "login.html"));
 });
 
 app.listen(PORT, () => {
