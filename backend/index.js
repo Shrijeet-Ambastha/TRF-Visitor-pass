@@ -47,8 +47,7 @@ app.post("/api/request-pass", async (req, res) => {
     });
 
     const approvalLink = `https://trf-visitor-pass.onrender.com/api/approve/${visitor._id}`;
-const rejectionLink = `https://trf-visitor-pass.onrender.com/api/reject/${visitor._id}`;
-
+    const rejectionLink = `https://trf-visitor-pass.onrender.com/api/reject/${visitor._id}`;
 
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -59,18 +58,17 @@ const rejectionLink = `https://trf-visitor-pass.onrender.com/api/reject/${visito
     });
 
     await transporter.sendMail({
-  from: process.env.EMAIL_USER,
-  to: hostEmail,
-  subject: "Approval Needed for Visitor",
-  html: `
-    <p>Hello ${host},</p>
-    <p>${name} has requested a visit on ${visitDate}.</p>
-    <p><strong>Purpose:</strong> ${purpose}</p>
-    <p><a href="${approvalLink}">✅ Click here to approve</a></p>
-    <p><a href="${rejectionLink}">❌ Click here to reject</a></p>
-  `
-});
-
+      from: process.env.EMAIL_USER,
+      to: hostEmail,
+      subject: "Approval Needed for Visitor",
+      html: `
+        <p>Hello ${host},</p>
+        <p>${name} has requested a visit on ${visitDate}.</p>
+        <p><strong>Purpose:</strong> ${purpose}</p>
+        <p><a href="${approvalLink}">✅ Click here to approve</a></p>
+        <p><a href="${rejectionLink}">❌ Click here to reject</a></p>
+      `
+    });
 
     res.status(200).json({ message: "✅ Request submitted. Awaiting host approval." });
   } catch (err) {
@@ -112,13 +110,12 @@ app.get("/api/approve/:id", async (req, res) => {
       };
 
       await transporter.sendMail({
-  from: process.env.EMAIL_USER,
-  to: visitor.email,
-  subject: `TRF Visitor Pass - ${visitor.passNumber}`,
-  text: `Your visit is approved. Please find your pass ${visitor.passNumber} attached.`,
-  attachments: [attachment]
-});
-
+        from: process.env.EMAIL_USER,
+        to: visitor.email,
+        subject: `TRF Visitor Pass - ${visitor.passNumber}`,
+        text: `Your visit is approved. Please find your pass ${visitor.passNumber} attached.`,
+        attachments: [attachment]
+      });
 
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
@@ -131,7 +128,57 @@ app.get("/api/approve/:id", async (req, res) => {
       res.send("✅ Approved. PDF sent to visitor and host.");
     });
 
-    app.get("/api/reject/:id", async (req, res) => {
+    // Add background image
+    const backgroundPath = path.join(__dirname, "background.png");
+    if (fs.existsSync(backgroundPath)) {
+      try {
+        doc.image(backgroundPath, 0, 0, {
+          width: doc.page.width,
+          height: doc.page.height
+        });
+      } catch (err) {
+        console.error("❌ Failed to add background image:", err.message);
+      }
+    }
+
+    // Logo
+    const logoPath = path.join(__dirname, "trf.png");
+    if (fs.existsSync(logoPath)) {
+      doc.image(logoPath, { fit: [130, 130], align: "center" });
+      doc.moveDown(0.5);
+    }
+
+    // Header and Details
+    doc.fontSize(20).fillColor("#004080").text("TRF Ltd", { align: "center" });
+    doc.moveDown(0.5);
+    doc.fontSize(26).fillColor("black").text("Visitor E-Pass", { align: "center" });
+    doc.moveDown(1);
+    doc.fontSize(16);
+    doc.text(`Pass No: ${visitor.passNumber}`);
+    doc.text(`Name: ${visitor.name}`);
+    doc.text(`Email: ${visitor.email}`);
+    doc.text(`Phone: ${visitor.phone}`);
+    doc.text(`Visit Date: ${visitor.visitDate}`);
+    doc.text(`Host: ${visitor.host}`);
+    doc.text(`Purpose: ${visitor.purpose}`);
+    doc.moveDown(1);
+
+    // Photo
+    if (visitor.photoData?.startsWith("data:image")) {
+      const base64 = visitor.photoData.replace(/^data:image\/png;base64,/, "");
+      const buffer = Buffer.from(base64, "base64");
+      doc.image(buffer, { width: 180, align: "center" });
+    }
+
+    doc.end();
+  } catch (err) {
+    console.error("❌ Error approving visitor:", err);
+    res.status(500).send("Error during approval");
+  }
+});
+
+// ❌ Reject API
+app.get("/api/reject/:id", async (req, res) => {
   const { id } = req.params;
   try {
     const visitor = await Visitor.findById(id);
@@ -142,7 +189,6 @@ app.get("/api/approve/:id", async (req, res) => {
     visitor.status = "rejected";
     await visitor.save();
 
-    // Notify visitor via email
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -162,59 +208,6 @@ app.get("/api/approve/:id", async (req, res) => {
   } catch (err) {
     console.error("❌ Error rejecting visitor:", err);
     res.status(500).send("Error during rejection");
-  }
-});
-
-    // Add background image (optional full-page watermark)
-const backgroundPath = path.join(__dirname, "background.png"); // Or .jpg
-
-if (fs.existsSync(backgroundPath)) {
-  try {
-    doc.image(backgroundPath, 0, 0, {
-      width: doc.page.width,
-      height: doc.page.height
-    });
-  } catch (err) {
-    console.error("❌ Failed to add background image:", err.message);
-  }
-}
-
-
-    // 📌 Logo
-    const logoPath = path.join(__dirname, "trf.png");
-    if (fs.existsSync(logoPath)) {
-      doc.image(logoPath, { fit: [130, 130], align: "center" });
-      doc.moveDown(0.5);
-    }
-
-    // Header
-    doc.fontSize(20).fillColor("#004080").text("TRF Ltd", { align: "center" });
-    doc.moveDown(0.5);
-    doc.fontSize(26).fillColor("black").text("Visitor E-Pass", { align: "center" });
-    doc.moveDown(1);
-
-    // Details
-    doc.fontSize(16);
-    doc.text(`Pass No: ${visitor.passNumber}`);
-    doc.text(`Name: ${visitor.name}`);
-    doc.text(`Email: ${visitor.email}`);
-    doc.text(`Phone: ${visitor.phone}`);
-    doc.text(`Visit Date: ${visitor.visitDate}`);
-    doc.text(`Host: ${visitor.host}`);
-    doc.text(`Purpose: ${visitor.purpose}`);
-    doc.moveDown(1);
-
-    // Live Photo
-    if (visitor.photoData?.startsWith("data:image")) {
-      const base64 = visitor.photoData.replace(/^data:image\/png;base64,/, "");
-      const buffer = Buffer.from(base64, "base64");
-      doc.image(buffer, { width: 180, align: "center" });
-    }
-
-    doc.end();
-  } catch (err) {
-    console.error("❌ Error approving visitor:", err);
-    res.status(500).send("Error during approval");
   }
 });
 
