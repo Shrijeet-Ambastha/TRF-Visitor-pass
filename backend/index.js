@@ -120,6 +120,20 @@ app.get("/api/approve/:id", async (req, res) => {
 
       res.send("✅ Approved. PDF sent to visitor and host.");
     });
+    // Add background image (optional full-page watermark)
+const backgroundPath = path.join(__dirname, "background.png"); // Or .jpg
+
+if (fs.existsSync(backgroundPath)) {
+  try {
+    doc.image(backgroundPath, 0, 0, {
+      width: doc.page.width,
+      height: doc.page.height
+    });
+  } catch (err) {
+    console.error("❌ Failed to add background image:", err.message);
+  }
+}
+
 
     // 📌 Logo
     const logoPath = path.join(__dirname, "trf.PNG");
