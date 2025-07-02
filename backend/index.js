@@ -103,12 +103,13 @@ app.get("/api/approve/:id", async (req, res) => {
       };
 
       await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: visitor.email,
-        subject: "Your Visitor Pass",
-        text: "Your visit is approved. PDF attached.",
-        attachments: [attachment]
-      });
+  from: process.env.EMAIL_USER,
+  to: visitor.email,
+  subject: `TRF Visitor Pass - ${visitor.passNumber}`,
+  text: `Your visit is approved. Please find your pass ${visitor.passNumber} attached.`,
+  attachments: [attachment]
+});
+
 
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
