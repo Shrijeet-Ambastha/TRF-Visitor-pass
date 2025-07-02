@@ -15,7 +15,7 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// ✅ Schema
+// ✅ Visitor Schema
 const visitorSchema = new mongoose.Schema({
   passNumber: String,
   name: String,
@@ -34,6 +34,13 @@ const Visitor = mongoose.model("Visitor", visitorSchema);
 
 app.use(bodyParser.json({ limit: '5mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '5mb' }));
+
+// ✅ Serve login.html explicitly for root URL (IMPORTANT)
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "frontend", "login.html"));
+});
+
+// ✅ Serve all other static files (like index.html, guard.html, etc.)
 app.use(express.static(path.join(__dirname, "..", "frontend")));
 
 // ✅ Request Pass
@@ -109,7 +116,6 @@ app.get("/api/approve/:id", async (req, res) => {
         contentType: "application/pdf"
       };
 
-      // Send to visitor
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: visitor.email,
@@ -118,7 +124,6 @@ app.get("/api/approve/:id", async (req, res) => {
         attachments: [attachment]
       });
 
-      // Send to host
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: visitor.hostEmail,
@@ -130,7 +135,6 @@ app.get("/api/approve/:id", async (req, res) => {
       res.send("✅ Approved. PDF sent to visitor and host.");
     });
 
-    // Background
     const bgPath = path.join(__dirname, "background.png");
     if (fs.existsSync(bgPath)) {
       doc.image(bgPath, 0, 0, {
@@ -139,14 +143,12 @@ app.get("/api/approve/:id", async (req, res) => {
       });
     }
 
-    // Logo
     const logoPath = path.join(__dirname, "trf.png");
     if (fs.existsSync(logoPath)) {
       doc.image(logoPath, { fit: [130, 130], align: "center" });
       doc.moveDown(0.5);
     }
 
-    // Info
     doc.fontSize(20).fillColor("#004080").text("TRF Ltd", { align: "center" });
     doc.moveDown(0.5);
     doc.fontSize(26).text("Visitor E-Pass", { align: "center" });
@@ -161,14 +163,12 @@ app.get("/api/approve/:id", async (req, res) => {
     doc.text(`Purpose: ${visitor.purpose}`);
     doc.moveDown(1);
 
-    // Photo
     if (visitor.photoData?.startsWith("data:image")) {
       const buffer = Buffer.from(visitor.photoData.split(",")[1], "base64");
       doc.image(buffer, { width: 180, align: "center" });
     }
 
     doc.end();
-
   } catch (err) {
     console.error("❌ Error approving visitor:", err);
     res.status(500).send("Error during approval");
@@ -260,7 +260,7 @@ app.get("/api/visitors", async (req, res) => {
   }
 });
 
-// ✅ Cleanup Visitors > 45 Days
+// ✅ Cleanup Old Records
 app.delete("/api/cleanup-old-visitors", async (req, res) => {
   const days = 45;
   const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
@@ -273,11 +273,7 @@ app.delete("/api/cleanup-old-visitors", async (req, res) => {
   }
 });
 
-// ✅ Default Route (Login Page)
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "frontend", "login.html"));
-});
-
+// ✅ Start Server
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
