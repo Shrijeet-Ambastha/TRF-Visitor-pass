@@ -224,6 +224,18 @@ app.get("/api/download-pass/:id", async (req, res) => {
     res.setHeader("Content-Disposition", `inline; filename=${visitor.passNumber}.pdf`);
     doc.pipe(res);
 
+     const bgPath = path.join(__dirname, "background.png");
+    if (fs.existsSync(bgPath)) {
+      try {
+        doc.image(bgPath, 0, 0, {
+          width: doc.page.width,
+          height: doc.page.height
+        });
+      } catch (err) {
+        console.error("❌ Background image error:", err.message);
+      }
+    }
+
     const logoPath = path.join(__dirname, "trf.png");
     if (fs.existsSync(logoPath)) doc.image(logoPath, { fit: [100, 100] });
 
