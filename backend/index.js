@@ -60,7 +60,7 @@ app.post("/api/request-pass", async (req, res) => {
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: hostEmail,
-      subject: "Approval Needed for Visitor",
+      subject: `Approval Needed - ${passNumber}`,
       html: `
         <p>Hello ${host},</p>
         <p>${name} has requested a visit on ${visitDate}.</p>
