@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Security Dashboard - TRF</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background-color: #f4f6f9;
+    }
+
+    h1 {
+      text-align: center;
+      color: #004080;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+
+    th {
+      background-color: #004080;
+      color: white;
+    }
+
+    button {
+      padding: 6px 12px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Security Guard Panel - Approved Passes</h1>
+  <table id="visitorTable">
+    <thead>
+      <tr>
+        <th>Pass No</th>
+        <th>Name</th>
+        <th>Visit Date</th>
+        <th>Purpose</th>
+        <th>Print Pass</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Data will be inserted by script -->
+    </tbody>
+  </table>
+
+  <script>
+    async function loadApprovedVisitors() {
+      try {
+        const res = await fetch("/api/visitors");
+        const visitors = await res.json();
+
+        const tbody = document.querySelector("#visitorTable tbody");
+        tbody.innerHTML = "";
+
+        visitors
+          .filter(v => v.status === "approved")
+          .forEach(visitor => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${visitor.passNumber}</td>
+              <td>${visitor.name}</td>
+              <td>${visitor.visitDate}</td>
+              <td>${visitor.purpose}</td>
+              <td>
+                <a href="/api/download-pass/${visitor._id}" target="_blank">
+                  <button>Print PDF</button>
+                </a>
+              </td>
+            `;
+            tbody.appendChild(row);
+          });
+      } catch (err) {
+        console.error("Error loading approved visitors:", err);
+      }
+    }
+
+    loadApprovedVisitors();
+  </script>
+</body>
+</html>
