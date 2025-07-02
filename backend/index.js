@@ -43,6 +43,46 @@ app.get("/", (req, res) => {
 // ✅ Serve all other static files (like index.html, guard.html, etc.)
 app.use(express.static(path.join(__dirname, "..", "frontend")));
 
+// ✅ Reusable PDF Generator Function
+const generateVisitorPassPDF = (visitor, stream) => {
+  const doc = new PDFDocument();
+  doc.pipe(stream);
+
+  const bgPath = path.join(__dirname, "background.png");
+  if (fs.existsSync(bgPath)) {
+    doc.image(bgPath, 0, 0, {
+      width: doc.page.width,
+      height: doc.page.height
+    });
+  }
+
+  const logoPath = path.join(__dirname, "trf.png");
+  if (fs.existsSync(logoPath)) {
+    doc.image(logoPath, 60, 40, { fit: [80, 80] });
+  }
+
+  doc.moveDown(3);
+  doc.fontSize(20).fillColor("#004080").text("TRF Ltd", { align: "center" });
+  doc.fontSize(26).fillColor("#004080").text("Visitor E-Pass", { align: "center" });
+  doc.moveDown(1);
+  doc.fillColor("black").fontSize(14);
+  doc.text(`Pass No: ${visitor.passNumber}`);
+  doc.text(`Name: ${visitor.name}`);
+  doc.text(`Email: ${visitor.email}`);
+  doc.text(`Phone: ${visitor.phone}`);
+  doc.text(`Visit Date: ${visitor.visitDate}`);
+  doc.text(`Host: ${visitor.host}`);
+  doc.text(`Purpose: ${visitor.purpose}`);
+  doc.moveDown(1);
+
+  if (visitor.photoData?.startsWith("data:image")) {
+    const buffer = Buffer.from(visitor.photoData.split(",")[1], "base64");
+    doc.image(buffer, { width: 180, align: "center" });
+  }
+
+  doc.end();
+};
+
 // ✅ Request Pass
 app.post("/api/request-pass", async (req, res) => {
   const { name, email, phone, visitDate, host, hostEmail, purpose, photoData } = req.body;
@@ -95,9 +135,8 @@ app.get("/api/approve/:id", async (req, res) => {
     visitor.status = "approved";
     await visitor.save();
 
-    const doc = new PDFDocument();
     const chunks = [];
-
+    const doc = new PDFDocument();
     doc.on("data", chunk => chunks.push(chunk));
     doc.on("end", async () => {
       const pdfBuffer = Buffer.concat(chunks);
@@ -135,40 +174,8 @@ app.get("/api/approve/:id", async (req, res) => {
       res.send("✅ Approved. PDF sent to visitor and host.");
     });
 
-    const bgPath = path.join(__dirname, "background.png");
-    if (fs.existsSync(bgPath)) {
-      doc.image(bgPath, 0, 0, {
-        width: doc.page.width,
-        height: doc.page.height
-      });
-    }
+    generateVisitorPassPDF(visitor, doc);
 
-    const logoPath = path.join(__dirname, "trf.png");
-    if (fs.existsSync(logoPath)) {
-      doc.image(logoPath, { fit: [130, 130], align: "center" });
-      doc.moveDown(0.5);
-    }
-
-    doc.fontSize(20).fillColor("#004080").text("TRF Ltd", { align: "center" });
-    doc.moveDown(0.5);
-    doc.fontSize(26).text("Visitor E-Pass", { align: "center" });
-    doc.moveDown(1);
-    doc.fontSize(16).fillColor("black");
-    doc.text(`Pass No: ${visitor.passNumber}`);
-    doc.text(`Name: ${visitor.name}`);
-    doc.text(`Email: ${visitor.email}`);
-    doc.text(`Phone: ${visitor.phone}`);
-    doc.text(`Visit Date: ${visitor.visitDate}`);
-    doc.text(`Host: ${visitor.host}`);
-    doc.text(`Purpose: ${visitor.purpose}`);
-    doc.moveDown(1);
-
-    if (visitor.photoData?.startsWith("data:image")) {
-      const buffer = Buffer.from(visitor.photoData.split(",")[1], "base64");
-      doc.image(buffer, { width: 180, align: "center" });
-    }
-
-    doc.end();
   } catch (err) {
     console.error("❌ Error approving visitor:", err);
     res.status(500).send("Error during approval");
@@ -218,31 +225,10 @@ app.get("/api/download-pass/:id", async (req, res) => {
       return res.status(404).send("Pass not found or not approved");
     }
 
-    const doc = new PDFDocument();
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `inline; filename=${visitor.passNumber}.pdf`);
-    doc.pipe(res);
+    generateVisitorPassPDF(visitor, res);
 
-    const logoPath = path.join(__dirname, "trf.png");
-    if (fs.existsSync(logoPath)) doc.image(logoPath, { fit: [100, 100] });
-
-    doc.fontSize(18).text("TRF Ltd", { align: "center" });
-    doc.moveDown();
-    doc.fontSize(22).text("Visitor Pass", { align: "center" });
-    doc.moveDown();
-    doc.fontSize(14);
-    doc.text(`Pass No: ${visitor.passNumber}`);
-    doc.text(`Name: ${visitor.name}`);
-    doc.text(`Visit Date: ${visitor.visitDate}`);
-    doc.text(`Purpose: ${visitor.purpose}`);
-    doc.text(`Host: ${visitor.host}`);
-
-    if (visitor.photoData?.startsWith("data:image")) {
-      const buffer = Buffer.from(visitor.photoData.split(",")[1], "base64");
-      doc.image(buffer, { width: 120 });
-    }
-
-    doc.end();
   } catch (err) {
     console.error("❌ Error generating download PDF:", err);
     res.status(500).send("Failed to generate PDF");
