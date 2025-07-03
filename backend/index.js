@@ -22,6 +22,9 @@ const visitorSchema = new mongoose.Schema({
   email: String,
   phone: String,
   visitDate: String,
+  visitTime: String,     // NEW
+endTime: String,       // NEW
+
   host: String,
   hostEmail: String,
   purpose: String,
@@ -55,7 +58,7 @@ app.use(express.static(path.join(__dirname, "..", "frontend")));
 // ✅ Visitor Request API
 app.post("/api/request-pass", async (req, res) => {
   const {
-  name, email, phone, visitDate,
+  name, email, phone, visitDate, visitTime, endTime,
   host, hostEmail, purpose, photoData,
   personType, visitArea, ppe,
   govtIdType, govtIdNumber, laptopNo, vehicleNo
@@ -65,7 +68,7 @@ app.post("/api/request-pass", async (req, res) => {
 
   try {
     const visitor = await Visitor.create({
-  passNumber, name, email, phone, visitDate,
+  passNumber, name, email, phone, visitDate, visitTime, endTime,
   host, hostEmail, purpose, photoData,
   personType, visitArea, ppe,
   govtIdType, govtIdNumber, laptopNo, vehicleNo
@@ -177,6 +180,8 @@ app.get("/api/approve/:id", async (req, res) => {
     doc.text(`Email: ${visitor.email}`);
     doc.text(`Phone: ${visitor.phone}`);
     doc.text(`Visit Date: ${visitor.visitDate}`);
+    doc.text(`Visit Time: ${visitor.visitTime || "N/A"}`);
+doc.text(`End Time: ${visitor.endTime || "N/A"}`);
     doc.text(`Host: ${visitor.host}`);
     doc.text(`Type of Person: ${visitor.personType || "N/A"}`);
 doc.text(`Area of Visit: ${visitor.visitArea || "N/A"}`);
