@@ -53,8 +53,9 @@ app.post("/api/request-pass", async (req, res) => {
   const passNumber = `TRF-${Math.floor(100000 + Math.random() * 900000)}`;
   try {
     const visitor = await Visitor.create({ ...data, passNumber });
-    const approvalLink = `${process.env.BASE_URL}/api/approve/${visitor._id}`;
-    const rejectionLink = `${process.env.BASE_URL}/api/reject/${visitor._id}`;
+    const approvalLink = `https://trf-visitor-pass.onrender.com/api/approve/${visitor._id}`;
+    const rejectionLink = `https://trf-visitor-pass.onrender.com/api/reject/${visitor._id}`;
+
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -62,6 +63,7 @@ app.post("/api/request-pass", async (req, res) => {
         pass: process.env.EMAIL_PASS
       }
     });
+
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: visitor.hostEmail,
@@ -74,6 +76,7 @@ app.post("/api/request-pass", async (req, res) => {
         <p><a href="${rejectionLink}">❌ Click here to reject</a></p>
       `
     });
+
     res.status(200).json({ message: "✅ Request submitted. Awaiting host approval." });
   } catch (err) {
     console.error("❌ Failed to process request:", err);
@@ -97,21 +100,21 @@ function createPdf(doc, visitor) {
   doc.moveDown();
 
   const details = [
-    [`Pass No`, visitor.passNumber],
-    [`Name`, visitor.name],
-    [`Email`, visitor.email],
-    [`Phone`, visitor.phone],
-    [`Visit Date`, visitor.visitDate],
-    [`Visit Time`, visitor.visitTime || "N/A"],
-    [`End Time`, visitor.endTime || "N/A"],
-    [`Host`, visitor.host],
-    [`Person Type`, visitor.personType || "N/A"],
-    [`Area of Visit`, visitor.visitArea || "N/A"],
-    [`PPE`, visitor.ppe || "N/A"],
-    [`Govt ID`, `${visitor.govtIdType || "N/A"} - ${visitor.govtIdNumber || ""}`],
-    [`Laptop No`, visitor.laptopNo || "N/A"],
-    [`Vehicle No`, visitor.vehicleNo || "N/A"],
-    [`Purpose`, visitor.purpose]
+    ["Pass No", visitor.passNumber],
+    ["Name", visitor.name],
+    ["Email", visitor.email],
+    ["Phone", visitor.phone],
+    ["Visit Date", visitor.visitDate],
+    ["Visit Time", visitor.visitTime || "N/A"],
+    ["End Time", visitor.endTime || "N/A"],
+    ["Host", visitor.host],
+    ["Person Type", visitor.personType || "N/A"],
+    ["Area of Visit", visitor.visitArea || "N/A"],
+    ["PPE", visitor.ppe || "N/A"],
+    ["Govt ID", `${visitor.govtIdType || "N/A"} - ${visitor.govtIdNumber || ""}`],
+    ["Laptop No", visitor.laptopNo || "N/A"],
+    ["Vehicle No", visitor.vehicleNo || "N/A"],
+    ["Purpose", visitor.purpose]
   ];
 
   details.forEach(([label, value]) => {
@@ -204,6 +207,16 @@ app.get("/api/download-pass/:id", async (req, res) => {
   } catch (err) {
     console.error("❌ Download error:", err);
     res.status(500).send("Download failed");
+  }
+});
+
+app.get("/api/visitors", async (req, res) => {
+  try {
+    const visitors = await Visitor.find().sort({ issuedAt: -1 });
+    res.json(visitors);
+  } catch (err) {
+    console.error("❌ Fetch error:", err);
+    res.status(500).send("Failed to retrieve visitors");
   }
 });
 
