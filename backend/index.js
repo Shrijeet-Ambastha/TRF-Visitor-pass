@@ -135,7 +135,7 @@ function createPdf(doc, visitor) {
     "-> Pass must be returned at gate.",
     "-> Material/documents must be declared for approval."
   ];
-  instructions.forEach(text => doc.fontSize(9).text(`• ${text}`));
+  instructions.forEach(text => doc.fontSize(14).text(`• ${text}`));
 
   doc.moveDown();
   doc.fontSize(10).text(`* This pass is valid for ${visitor.visitDate}`, { align: "left" });
