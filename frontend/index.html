@@ -199,6 +199,20 @@ document.getElementById("laptopNoSelect").addEventListener("change", function ()
     }
   });
 </script>
+<script>
+  window.onload = function () {
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        document.getElementById("camera").srcObject = stream;
+      })
+      .catch(err => {
+        console.error("Camera access denied or not available:", err);
+      });
+  };
+</script>
+<video id="camera" width="300" autoplay></video>
 
 </body>
 </html>
+
+
