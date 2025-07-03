@@ -192,6 +192,34 @@ doc.text(`Vehicle No: ${visitor.vehicleNo || "N/A"}`);
       const buffer = Buffer.from(visitor.photoData.split(",")[1], "base64");
       doc.image(buffer, { width: 180, align: "center" });
     }
+// Instructions Section
+doc.moveDown(1);
+doc.fontSize(14).fillColor("#000").text("Instructions :", { underline: true });
+doc.fontSize(11).fillColor("black");
+
+const instructions = [
+  "You are not allowed to work inside plant with this Pass.",
+  "Please fold the paper from middle to 2 parts as marked in dotted line.",
+  "Pass is valid for specified date and time.",
+  "Pass is non-transferable and to be used only for declared purpose.",
+  "Person below 18 years of age are not allowed inside the project sites.",
+  "Photo/video-graphy inside official premises is prohibited.",
+  "Visitor is responsible for his own safety and belongings inside the site.",
+  "Concerned contact person would arrange the PPE’s for visitor and brief on safety rules.",
+  "Contact person would counter sign the visitor’s Pass at the end of the visit.",
+  "Pass needs to be returned to security personnel at the gate while exiting.",
+  "Any material /document required to be taken inside the plant must be declared and subject to appropriate approval at the gate."
+];
+
+instructions.forEach(i => doc.text(`• ${i}`));
+
+// Validity & Signatures
+doc.moveDown(1);
+doc.font("Helvetica-Bold").text(`* This pass is valid for ${visitor.visitDate} Trf Ltd`, { italics: true });
+
+doc.moveDown(2);
+doc.font("Helvetica").text("Visitor Signature", { continued: true, align: "left" });
+doc.text("Host Signature", { align: "right" });
 
     doc.end();
   } catch (err) {
@@ -287,6 +315,36 @@ doc.text(`Vehicle No: ${visitor.vehicleNo || "N/A"}`);
       const buffer = Buffer.from(visitor.photoData.split(",")[1], "base64");
       doc.image(buffer, { width: 120 });
     }
+
+// Instructions Section
+doc.moveDown(1);
+doc.fontSize(14).fillColor("#000").text("Instructions :", { underline: true });
+doc.fontSize(11).fillColor("black");
+
+const instructions = [
+  "You are not allowed to work inside plant with this Pass.",
+  "Please fold the paper from middle to 2 parts as marked in dotted line.",
+  "Pass is valid for specified date and time.",
+  "Pass is non-transferable and to be used only for declared purpose.",
+  "Person below 18 years of age are not allowed inside the project sites.",
+  "Photo/video-graphy inside official premises is prohibited.",
+  "Visitor is responsible for his own safety and belongings inside the site.",
+  "Concerned contact person would arrange the PPE’s for visitor and brief on safety rules.",
+  "Contact person would counter sign the visitor’s Pass at the end of the visit.",
+  "Pass needs to be returned to security personnel at the gate while exiting.",
+  "Any material /document required to be taken inside the plant must be declared and subject to appropriate approval at the gate."
+];
+
+instructions.forEach(i => doc.text(`• ${i}`));
+
+// Validity & Signatures
+doc.moveDown(1);
+doc.font("Helvetica-Bold").text(`* This pass is valid for ${visitor.visitDate} Trf Ltd`, { italics: true });
+
+doc.moveDown(2);
+doc.font("Helvetica").text("Visitor Signature", { continued: true, align: "left" });
+doc.text("Host Signature", { align: "right" });
+
 
     doc.end();
   } catch (err) {
