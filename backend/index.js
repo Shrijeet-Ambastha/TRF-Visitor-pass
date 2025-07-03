@@ -42,6 +42,9 @@ const Visitor = mongoose.model("Visitor", visitorSchema);
 
 app.use(bodyParser.json({ limit: "5mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "5mb" }));
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "frontend", "login.html"));
+});
 
 app.use(express.static(path.join(__dirname, "..", "frontend")));
 
