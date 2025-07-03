@@ -121,19 +121,19 @@ function createPdf(doc, visitor) {
   }
 
   doc.moveDown();
-  doc.fontSize(12).text("Instructions:", { underline: true });
+  doc.fontSize(16).text("Instructions:", { underline: true });
   const instructions = [
-    "You are not allowed to work inside plant with this Pass.",
-    "Fold paper as marked in dotted line.",
-    "Pass valid for specified date/time.",
-    "Non-transferable and for declared purpose only.",
-    "No persons under 18 years.",
-    "No photography inside premises.",
-    "You are responsible for your own safety and belongings.",
-    "Host to provide PPE and safety briefing.",
-    "Host must sign pass post-visit.",
-    "Pass must be returned at gate.",
-    "Material/documents must be declared for approval."
+    "-> You are not allowed to work inside plant with this Pass.",
+    "-> Fold paper as marked in dotted line.",
+    "-> Pass valid for specified date/time.",
+    "-> Non-transferable and for declared purpose only.",
+    "-> No persons under 18 years.",
+    "-> No photography inside premises.",
+    "-> You are responsible for your own safety and belongings.",
+    "-> Host to provide PPE and safety briefing.",
+    "-> Host must sign pass post-visit.",
+    "-> Pass must be returned at gate.",
+    "-> Material/documents must be declared for approval."
   ];
   instructions.forEach(text => doc.fontSize(9).text(`• ${text}`));
 
