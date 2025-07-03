@@ -129,11 +129,69 @@
 <!-- ID Number -->
 <label for="govtIdNumber">ID Number:</label>
 <input type="text" id="govtIdNumber" name="govtIdNumber" required />
+
+<label for="laptopNo">Laptop No.:</label>
+<select id="laptopNoSelect" name="laptopNo">
+  <option value="NA">NA</option>
+  <option value="LAP123">LAP123</option>
+  <option value="Other">Other</option>
+</select>
+<input type="text" id="laptopNoInput" name="laptopNo" style="display:none;" placeholder="Enter Laptop No" />
+
+<label for="vehicleNo">Vehicle No:</label>
+<select id="vehicleNoSelect" name="vehicleNo">
+  <option value="NA">NA</option>
+  <option value="JH01AB1234">JH01AB1234</option>
+  <option value="JH01CD5678">JH01CD5678</option>
+  <option value="Other">Other</option>
+</select>
+
+<input
+  type="text"
+  id="vehicleNoInput"
+  name="vehicleNo"
+  placeholder="Enter Vehicle No"
+  style="display: none; margin-top: 8px;"
+/>
+
+
 <button type="submit">Generate Pass</button>
     <button id="printBtn" style="display: none; margin-top: 15px;">🖨️ Print Visitor Pass</button>
   </form>
 </div>
 
   <script src="script.js"></script>
+
+<script>
+document.getElementById("laptopNoSelect").addEventListener("change", function () {
+  const input = document.getElementById("laptopNoInput");
+  if (this.value === "Other") {
+    input.style.display = "block";
+    input.name = "laptopNo";
+    this.name = "";
+  } else {
+    input.style.display = "none";
+    input.name = "";
+    this.name = "laptopNo";
+  }
+});
+</script>
+<script>
+  const vehicleSelect = document.getElementById("vehicleNoSelect");
+  const vehicleInput = document.getElementById("vehicleNoInput");
+
+  vehicleSelect.addEventListener("change", function () {
+    if (this.value === "Other") {
+      vehicleInput.style.display = "block";
+      vehicleInput.name = "vehicleNo";   // enable input
+      this.name = "";                    // disable select
+    } else {
+      vehicleInput.style.display = "none";
+      vehicleInput.name = "";            // disable input
+      this.name = "vehicleNo";           // enable select
+    }
+  });
+</script>
+
 </body>
 </html>

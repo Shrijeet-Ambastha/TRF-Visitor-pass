@@ -26,14 +26,17 @@ const visitorSchema = new mongoose.Schema({
   hostEmail: String,
   purpose: String,
   photoData: String,
-  personType: String,
-  visitArea: String,
-  ppe: String,
-  govtIdType: String,         // ✅ NEW
-  govtIdNumber: String,       // ✅ NEW
+  personType: String,           // NEW
+  visitArea: String,            // NEW
+  ppe: String,                  // NEW
+  govtIdType: String,           // NEW
+  govtIdNumber: String,         // NEW
+  laptopNo: String,             // NEW
+  vehicleNo: String,            // NEW
   status: { type: String, default: "pending" },
   issuedAt: { type: Date, default: Date.now }
 });
+
 
 
 const Visitor = mongoose.model("Visitor", visitorSchema);
@@ -52,17 +55,21 @@ app.use(express.static(path.join(__dirname, "..", "frontend")));
 // ✅ Visitor Request API
 app.post("/api/request-pass", async (req, res) => {
   const {
-  name, email, phone, visitDate, host, hostEmail, purpose, photoData,
-  personType, visitArea, ppe, govtIdType, govtIdNumber
+  name, email, phone, visitDate,
+  host, hostEmail, purpose, photoData,
+  personType, visitArea, ppe,
+  govtIdType, govtIdNumber, laptopNo, vehicleNo
 } = req.body;
+
   const passNumber = `TRF-${Math.floor(100000 + Math.random() * 900000)}`;
 
   try {
     const visitor = await Visitor.create({
-  passNumber, name, email, phone, visitDate, host, hostEmail,
-  purpose, photoData, personType, visitArea, ppe, govtIdType, govtIdNumber
+  passNumber, name, email, phone, visitDate,
+  host, hostEmail, purpose, photoData,
+  personType, visitArea, ppe,
+  govtIdType, govtIdNumber, laptopNo, vehicleNo
 });
-
     const approvalLink = `https://trf-visitor-pass.onrender.com/api/approve/${visitor._id}`;
     const rejectionLink = `https://trf-visitor-pass.onrender.com/api/reject/${visitor._id}`;
 
@@ -171,10 +178,12 @@ app.get("/api/approve/:id", async (req, res) => {
     doc.text(`Phone: ${visitor.phone}`);
     doc.text(`Visit Date: ${visitor.visitDate}`);
     doc.text(`Host: ${visitor.host}`);
-    doc.text(`Type of Person: ${visitor.personType}`);
-doc.text(`Area of Visit: ${visitor.visitArea}`);
-doc.text(`PPE Required: ${visitor.ppe}`);
-doc.text(`Govt ID: ${visitor.govtIdType} - ${visitor.govtIdNumber}`);
+    doc.text(`Type of Person: ${visitor.personType || "N/A"}`);
+doc.text(`Area of Visit: ${visitor.visitArea || "N/A"}`);
+doc.text(`PPE Required: ${visitor.ppe || "N/A"}`);
+doc.text(`Govt ID: ${visitor.govtIdType || "N/A"} - ${visitor.govtIdNumber || ""}`);
+doc.text(`Laptop No: ${visitor.laptopNo || "N/A"}`);
+doc.text(`Vehicle No: ${visitor.vehicleNo || "N/A"}`);
 
     doc.text(`Purpose: ${visitor.purpose}`);
     doc.moveDown(1);
@@ -265,10 +274,12 @@ app.get("/api/download-pass/:id", async (req, res) => {
     doc.text(`Phone: ${visitor.phone}`);
     doc.text(`Visit Date: ${visitor.visitDate}`);
     doc.text(`Host: ${visitor.host}`);
-    doc.text(`Type of Person: ${visitor.personType}`);
-doc.text(`Area of Visit: ${visitor.visitArea}`);
-doc.text(`PPE Required: ${visitor.ppe}`);
-doc.text(`Govt ID: ${visitor.govtIdType} - ${visitor.govtIdNumber}`);
+    doc.text(`Type of Person: ${visitor.personType || "N/A"}`);
+doc.text(`Area of Visit: ${visitor.visitArea || "N/A"}`);
+doc.text(`PPE Required: ${visitor.ppe || "N/A"}`);
+doc.text(`Govt ID: ${visitor.govtIdType || "N/A"} - ${visitor.govtIdNumber || ""}`);
+doc.text(`Laptop No: ${visitor.laptopNo || "N/A"}`);
+doc.text(`Vehicle No: ${visitor.vehicleNo || "N/A"}`);
 
     doc.text(`Purpose: ${visitor.purpose}`);
 
