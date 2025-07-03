@@ -117,11 +117,12 @@ function createPdf(doc, visitor) {
   details.forEach(([label, value]) => {
     doc.fontSize(11).text(`${label}: ${value}`);
   });
+if (visitor.photoData?.startsWith("data:image")) {
+  const buffer = Buffer.from(visitor.photoData.split(",")[1], "base64");
+  doc.image(buffer, { width: 120, align: "center" });
+  doc.moveDown(1);
+}
 
-  if (visitor.photoData?.startsWith("data:image")) {
-    const buffer = Buffer.from(visitor.photoData.split(",")[1], "base64");
-    doc.image(buffer, 400, 200, { width: 100 });
-  }
 
   doc.moveDown();
   doc.fontSize(16).text("Instructions:", { underline: true });
