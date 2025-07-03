@@ -90,6 +90,46 @@
     <input name="purpose" placeholder="Purpose of Visit" required />
     <button type="submit">Generate Pass</button>
     <button id="printBtn" style="display: none; margin-top: 15px;">🖨️ Print Visitor Pass</button>
+<!-- Type of Person -->
+<label for="personType">Type of Person:</label>
+<select id="personType" name="personType" required>
+  <option value="">Select type</option>
+  <option value="Contractor">Contractor</option>
+  <option value="Visitor">Visitor</option>
+  <option value="Intern">Intern</option>
+</select>
+
+<!-- Area of Visit -->
+<label for="visitArea">Area of Visit:</label>
+<select id="visitArea" name="visitArea" required>
+  <option value="">Select area</option>
+  <option value="Plant">Plant</option>
+  <option value="Office">Office</option>
+  <option value="Warehouse">Warehouse</option>
+</select>
+
+<!-- PPE Required -->
+<label for="ppe">PPE Required:</label>
+<select id="ppe" name="ppe" required>
+  <option value="">Select PPE</option>
+  <option value="Helmet">Helmet</option>
+  <option value="Safety Shoes">Safety Shoes</option>
+  <option value="Goggles">Goggles</option>
+  <option value="None">None</option>
+</select>
+
+<!-- Govt ID Type -->
+<label for="govtIdType">Govt Authorized Proof:</label>
+<select id="govtIdType" name="govtIdType" required>
+  <option value="">Select ID Type</option>
+  <option value="Aadhar">Aadhar</option>
+  <option value="PAN">PAN</option>
+  <option value="Voter ID">Voter ID</option>
+</select>
+
+<!-- ID Number -->
+<label for="govtIdNumber">ID Number:</label>
+<input type="text" id="govtIdNumber" name="govtIdNumber" required />
 
   </form>
 </div>
