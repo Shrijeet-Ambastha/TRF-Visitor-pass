@@ -77,6 +77,7 @@
 </h2>
   <h1>Visitor Pass Form</h1>
   <form id="visitorForm">
+    <button type="button" id="startCamera" style="margin-bottom: 15px;">📷 Start Camera</button>
      <video id="camera" autoplay playsinline width="300" style="margin: 10px auto; display: block;"></video>
     
     
@@ -173,63 +174,61 @@
   <script src="script.js"></script>
 
 <script>
-document.getElementById("laptopNoSelect").addEventListener("change", function () {
-  const input = document.getElementById("laptopNoInput");
-  if (this.value === "Other") {
-    input.style.display = "block";
-    input.name = "laptopNo";
-    this.name = "";
-  } else {
-    input.style.display = "none";
-    input.name = "";
-    this.name = "laptopNo";
-  }
-});
-</script>
-<script>
-  const vehicleSelect = document.getElementById("vehicleNoSelect");
-  const vehicleInput = document.getElementById("vehicleNoInput");
-
-  vehicleSelect.addEventListener("change", function () {
-    if (this.value === "Other") {
-      vehicleInput.style.display = "block";
-      vehicleInput.name = "vehicleNo";   // enable input
-      this.name = "";                    // disable select
-    } else {
-      vehicleInput.style.display = "none";
-      vehicleInput.name = "";            // disable input
-      this.name = "vehicleNo";           // enable select
-    }
-  });
-</script>
-<script>
   const form = document.getElementById("visitorForm");
   const video = document.getElementById("camera");
   const canvas = document.getElementById("snapshot");
   const photoInput = document.getElementById("photoData");
+  const startBtn = document.getElementById("startCamera");
+  const laptopSelect = document.getElementById("laptopNoSelect");
+  const laptopInput = document.getElementById("laptopNoInput");
+  const vehicleSelect = document.getElementById("vehicleNoSelect");
+  const vehicleInput = document.getElementById("vehicleNoInput");
 
+  // 🎥 Start camera on button click
+  startBtn.addEventListener("click", () => {
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        console.error("Camera access denied:", err);
+        alert("⚠️ Please allow camera access to capture your photo.");
+      });
+  });
 
-
+  // 🖼 Capture photo on form submit
   form.addEventListener("submit", function (e) {
     const context = canvas.getContext("2d");
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
     const dataURL = canvas.toDataURL("image/png");
     photoInput.value = dataURL;
   });
-</script>
 
-<script>
-  // Start webcam stream when the page loads
-  window.onload = function () {
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
-        document.getElementById("camera").srcObject = stream;
-      })
-      .catch(err => {
-        console.error("Camera access denied or not available:", err);
-        alert("⚠️ Please allow camera access to capture your photo.");
-      });
-  };
+  // 💻 Laptop input toggle
+  laptopSelect.addEventListener("change", function () {
+    if (this.value === "Other") {
+      laptopInput.style.display = "block";
+      laptopInput.name = "laptopNo";
+      this.name = "";
+    } else {
+      laptopInput.style.display = "none";
+      laptopInput.name = "";
+      this.name = "laptopNo";
+    }
+  });
+
+  // 🚗 Vehicle input toggle
+  vehicleSelect.addEventListener("change", function () {
+    if (this.value === "Other") {
+      vehicleInput.style.display = "block";
+      vehicleInput.name = "vehicleNo";
+      this.name = "";
+    } else {
+      vehicleInput.style.display = "none";
+      vehicleInput.name = "";
+      this.name = "vehicleNo";
+    }
+  });
 </script>
 
 

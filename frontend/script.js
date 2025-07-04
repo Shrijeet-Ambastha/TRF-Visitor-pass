@@ -27,15 +27,25 @@ document.getElementById("visitorForm").addEventListener("submit", async (e) => {
 
   // 4. Prepare form data to send
   const data = {
-    name: form.name.value,
-    email: form.email.value,
-    phone: form.phone.value,
-    visitDate: form.visitDate.value,
-    host: form.host.value,
-    hostEmail: form.hostEmail.value,
-    purpose: form.purpose.value,
-    photoData: photoDataInput.value
-  };
+  name: form.name.value,
+  email: form.email.value,
+  phone: form.phone.value,
+  visitDate: form.visitDate.value,
+  visitTime: form.visitTime.value,
+  endTime: form.endTime.value,
+  host: form.host.value,
+  hostEmail: form.hostEmail.value,
+  purpose: form.purpose.value,
+  photoData: photoDataInput.value,
+  personType: form.personType.value,
+  visitArea: form.visitArea.value,
+  ppe: form.ppe.value,
+  govtIdType: form.govtIdType.value,
+  govtIdNumber: form.govtIdNumber.value,
+  laptopNo: form.laptopNoSelect?.value || form.laptopNoInput?.value,
+  vehicleNo: form.vehicleNoSelect?.value || form.vehicleNoInput?.value
+};
+
 
   try {
     const res = await fetch("/api/request-pass", {
