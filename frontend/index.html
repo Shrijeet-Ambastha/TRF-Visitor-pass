@@ -208,15 +208,7 @@ document.getElementById("laptopNoSelect").addEventListener("change", function ()
   const canvas = document.getElementById("snapshot");
   const photoInput = document.getElementById("photoData");
 
-  window.onload = function () {
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
-        video.srcObject = stream;
-      })
-      .catch(err => {
-        console.error("Camera access denied or not available:", err);
-      });
-  };
+
 
   form.addEventListener("submit", function (e) {
     const context = canvas.getContext("2d");
@@ -226,6 +218,19 @@ document.getElementById("laptopNoSelect").addEventListener("change", function ()
   });
 </script>
 
+<script>
+  // Start webcam stream when the page loads
+  window.onload = function () {
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        document.getElementById("camera").srcObject = stream;
+      })
+      .catch(err => {
+        console.error("Camera access denied or not available:", err);
+        alert("⚠️ Please allow camera access to capture your photo.");
+      });
+  };
+</script>
 
 
 </body>
