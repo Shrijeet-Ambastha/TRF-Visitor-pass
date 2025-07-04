@@ -174,78 +174,9 @@
 
   
 
-<script>
-  const form = document.getElementById("visitorForm");
-  const video = document.getElementById("camera");
-  const canvas = document.getElementById("snapshot");
-  const photoInput = document.getElementById("photoData");
-  const startBtn = document.getElementById("startCamera");
-  const laptopSelect = document.getElementById("laptopNoSelect");
-  const laptopInput = document.getElementById("laptopNoInput");
-  const vehicleSelect = document.getElementById("vehicleNoSelect");
-  const vehicleInput = document.getElementById("vehicleNoInput");
 
 
-// 🖼 Capture photo on form submit
-  form.addEventListener("submit", function (e) {
-     e.preventDefault();
-    const context = canvas.getContext("2d");
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const dataURL = canvas.toDataURL("image/png");
-    photoInput.value = dataURL;
-  });
-
-  // 🎥 Start camera on button click
-  startBtn.addEventListener("click", () => {
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
-        video.srcObject = stream;
-      })
-      .catch(err => {
-        console.error("Camera access denied:", err);
-        alert("⚠️ Please allow camera access to capture your photo.");
-      });
-  });
-
-  
-
-  // 💻 Laptop input toggle
-  function handleLaptopChange() {
-    if (laptopSelect.value === "Other") {
-      laptopInput.style.display = "block";
-      laptopInput.name = "laptopNo";
-      laptopSelect.name = "";
-    } else {
-      laptopInput.style.display = "none";
-      laptopInput.name = "";
-      laptopSelect.name = "laptopNo";
-    }
-  }
-
-  // 🚗 Vehicle input toggle
-  function handleVehicleChange() {
-    if (vehicleSelect.value === "Other") {
-      vehicleInput.style.display = "block";
-      vehicleInput.name = "vehicleNo";
-      vehicleSelect.name = "";
-    } else {
-      vehicleInput.style.display = "none";
-      vehicleInput.name = "";
-      vehicleSelect.name = "vehicleNo";
-    }
-  }
-
-  // Attach event listeners
-  laptopSelect.addEventListener("change", handleLaptopChange);
-  vehicleSelect.addEventListener("change", handleVehicleChange);
-
-  // ✅ Run once on load 
-  window.onload = function () {
-    handleLaptopChange();
-    handleVehicleChange();
-  };
-</script>
-
+<script src="script.js"></script>
 
 
 </body>

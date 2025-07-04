@@ -191,6 +191,24 @@ app.get("/api/approve/:id", async (req, res) => {
   }
 });
 
+
+app.get("/api/reject/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const visitor = await Visitor.findById(id);
+    if (!visitor) return res.status(404).send("Visitor not found");
+
+    visitor.status = "rejected";
+    await visitor.save();
+
+    res.send("❌ Visit request has been rejected.");
+  } catch (err) {
+    console.error("❌ Rejection error:", err);
+    res.status(500).send("Rejection failed");
+  }
+});
+
+
 app.get("/api/download-pass/:id", async (req, res) => {
   const { id } = req.params;
   try {
