@@ -148,6 +148,7 @@
   <option value="Other">Other</option>
 </select>
 <input type="text" id="laptopNoInput" name="laptopNo" style="display:none;" placeholder="Enter Laptop No" />
+
 <!-- Vehicle No -->
 <label for="vehicleNo">Vehicle No:</label>
 <select id="vehicleNoSelect" name="vehicleNo">
@@ -171,7 +172,7 @@
   </form>
 </div>
 
-  <script src="script.js"></script>
+  
 
 <script>
   const form = document.getElementById("visitorForm");
@@ -183,6 +184,16 @@
   const laptopInput = document.getElementById("laptopNoInput");
   const vehicleSelect = document.getElementById("vehicleNoSelect");
   const vehicleInput = document.getElementById("vehicleNoInput");
+
+
+// 🖼 Capture photo on form submit
+  form.addEventListener("submit", function (e) {
+     e.preventDefault();
+    const context = canvas.getContext("2d");
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataURL = canvas.toDataURL("image/png");
+    photoInput.value = dataURL;
+  });
 
   // 🎥 Start camera on button click
   startBtn.addEventListener("click", () => {
@@ -196,13 +207,7 @@
       });
   });
 
-  // 🖼 Capture photo on form submit
-  form.addEventListener("submit", function (e) {
-    const context = canvas.getContext("2d");
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const dataURL = canvas.toDataURL("image/png");
-    photoInput.value = dataURL;
-  }); // ✅ this was wrong before
+  
 
   // 💻 Laptop input toggle
   function handleLaptopChange() {
@@ -234,7 +239,7 @@
   laptopSelect.addEventListener("change", handleLaptopChange);
   vehicleSelect.addEventListener("change", handleVehicleChange);
 
-  // ✅ Run once on load
+  // ✅ Run once on load 
   window.onload = function () {
     handleLaptopChange();
     handleVehicleChange();

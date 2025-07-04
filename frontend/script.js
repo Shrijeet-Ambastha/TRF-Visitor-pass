@@ -42,8 +42,17 @@ document.getElementById("visitorForm").addEventListener("submit", async (e) => {
   ppe: form.ppe.value,
   govtIdType: form.govtIdType.value,
   govtIdNumber: form.govtIdNumber.value,
-  laptopNo: form.laptopNoSelect?.value || form.laptopNoInput?.value,
-  vehicleNo: form.vehicleNoSelect?.value || form.vehicleNoInput?.value
+   laptopNo:
+  document.getElementById("laptopNoSelect").value === "Other"
+    ? document.getElementById("laptopNoInput").value
+    : document.getElementById("laptopNoSelect").value,
+
+vehicleNo:
+  document.getElementById("vehicleNoSelect").value === "Other"
+    ? document.getElementById("vehicleNoInput").value
+    : document.getElementById("vehicleNoSelect").value,
+
+
 };
 
 
@@ -58,6 +67,8 @@ document.getElementById("visitorForm").addEventListener("submit", async (e) => {
     if (res.ok) {
       alert("✅ Request submitted! Awaiting host approval.");
       form.reset();
+document.getElementById("laptopNoInput").style.display = "none";
+document.getElementById("vehicleNoInput").style.display = "none";
 
       // ✅ Show the print button
       printBtn.style.display = "inline-block";
