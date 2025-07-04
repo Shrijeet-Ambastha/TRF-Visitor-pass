@@ -202,52 +202,45 @@
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
     const dataURL = canvas.toDataURL("image/png");
     photoInput.value = dataURL;
-  
-
-   // Update laptopNo and vehicleNo manually if "Other" is selected
-    if (laptopSelect.value === "Other") {
-      laptopSelect.name = "";
-      laptopInput.name = "laptopNo";
-    } else {
-      laptopSelect.name = "laptopNo";
-      laptopInput.name = "";
-    }
-
-    if (vehicleSelect.value === "Other") {
-      vehicleSelect.name = "";
-      vehicleInput.name = "vehicleNo";
-    } else {
-      vehicleSelect.name = "vehicleNo";
-      vehicleInput.name = "";
-    }
-  });
+  }); // ✅ this was wrong before
 
   // 💻 Laptop input toggle
-  laptopSelect.addEventListener("change", function () {
-    if (this.value === "Other") {
+  function handleLaptopChange() {
+    if (laptopSelect.value === "Other") {
       laptopInput.style.display = "block";
       laptopInput.name = "laptopNo";
-      this.name = "";
+      laptopSelect.name = "";
     } else {
       laptopInput.style.display = "none";
       laptopInput.name = "";
-      this.name = "laptopNo";
+      laptopSelect.name = "laptopNo";
     }
-  });
+  }
 
   // 🚗 Vehicle input toggle
-  vehicleSelect.addEventListener("change", function () {
-    if (this.value === "Other") {
+  function handleVehicleChange() {
+    if (vehicleSelect.value === "Other") {
       vehicleInput.style.display = "block";
       vehicleInput.name = "vehicleNo";
-      this.name = "";
+      vehicleSelect.name = "";
     } else {
       vehicleInput.style.display = "none";
       vehicleInput.name = "";
-      this.name = "vehicleNo";
+      vehicleSelect.name = "vehicleNo";
     }
-  });
+  }
+
+  // Attach event listeners
+  laptopSelect.addEventListener("change", handleLaptopChange);
+  vehicleSelect.addEventListener("change", handleVehicleChange);
+
+  // ✅ Run once on load
+  window.onload = function () {
+    handleLaptopChange();
+    handleVehicleChange();
+  };
 </script>
+
 
 
 </body>
