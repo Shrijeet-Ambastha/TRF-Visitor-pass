@@ -148,7 +148,7 @@
   <option value="Other">Other</option>
 </select>
 <input type="text" id="laptopNoInput" name="laptopNo" style="display:none;" placeholder="Enter Laptop No" />
-
+<!-- Vehicle No -->
 <label for="vehicleNo">Vehicle No:</label>
 <select id="vehicleNoSelect" name="vehicleNo">
   <option value="NA">NA</option>
@@ -202,6 +202,24 @@
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
     const dataURL = canvas.toDataURL("image/png");
     photoInput.value = dataURL;
+  
+
+   // Update laptopNo and vehicleNo manually if "Other" is selected
+    if (laptopSelect.value === "Other") {
+      laptopSelect.name = "";
+      laptopInput.name = "laptopNo";
+    } else {
+      laptopSelect.name = "laptopNo";
+      laptopInput.name = "";
+    }
+
+    if (vehicleSelect.value === "Other") {
+      vehicleSelect.name = "";
+      vehicleInput.name = "vehicleNo";
+    } else {
+      vehicleSelect.name = "vehicleNo";
+      vehicleInput.name = "";
+    }
   });
 
   // 💻 Laptop input toggle
